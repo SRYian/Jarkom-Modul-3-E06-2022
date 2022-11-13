@@ -81,7 +81,7 @@ iface eth0 inet static
 	netmask 255.255.255.0
 	gateway 192.195.2.1
 ```
-
+Untuk DHCP, Proxy, dan DNS konfigurasi akan static dan bukan DHCP, hal ini mempermudah server untuk melakukan koneksi langsung ke internet
 
 - Eden (Client)
 ```
@@ -222,7 +222,7 @@ iface eth0 inet dhcp
 ### SOAL 4
 ### Client yang melalui Switch3 mendapatkan range IP dari [prefix IP].3.10 - [prefix IP].3.30 dan [prefix IP].3.60 - [prefix IP].3.85 
 - Pada Westalis
-Tambahkan konfigurasi berikut ke `/etc/dhcp/dhcpd.conf`
+Tambahkan konfigurasi berikut ke `/etc/dhcp/dhcpd.conf` dan atur range sesuai prefix range IP yang diminta
 ```
 subnet 192.195.3.0 netmask 255.255.255.0 {
     range 192.195.3.10 192.195.3.30;
@@ -235,7 +235,7 @@ subnet 192.195.3.0 netmask 255.255.255.0 {
 }
 
 ```
-
+###Untuk tiap client, pada awalnya masih memakai iface eth0 static, maka iface harus diubah ke dhcp agar mendapatkan IP
 - Pada Eden
 ```
 echo '
