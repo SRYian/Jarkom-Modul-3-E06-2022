@@ -113,15 +113,21 @@ service bind9 start
 ```
 
 - Pada Westalis
+Instalasi server
 ```
 apt-get install isc-dhcp-server-y
 dhcp --version
+```
+
+Edit konfigurasi
+```
 echo '
 INTERFACES="eth0"
 ' > /etc/default/isc-dhcp-server
 ```
 
 - Pada Berlint
+Instalasi squid
 ```
 apt-get install squid -y
 service squid start
@@ -130,9 +136,14 @@ service squid start
 
 ### SOAL 2
 ### dan Ostania sebagai DHCP Relay. Loid dan Franky menyusun peta tersebut dengan hati-hati dan teliti.
-- Pada Ostania
+- Pada Ostania Melakukan instalasi DHCP Relay sebagai berikut.
 ```
 apt-get install isc-dhcp-relay -y
+```
+
+Edit konfigurasi pada `/etc/default/isc-dhcp-relay` sebagai berikut
+
+```
 echo '
 # Defaults for isc-dhcp-relay initscript
 # sourced by /etc/init.d/isc-dhcp-relay
@@ -159,6 +170,7 @@ OPTIONS=""
 ### Ada beberapa kriteria yang ingin dibuat oleh Loid dan Franky, yaitu: Semua client yang ada HARUS menggunakan konfigurasi IP dari DHCP Server. Client yang melalui Switch1 mendapatkan range IP dari [prefix IP].1.50 - [prefix IP].1.88 dan [prefix IP].1.120 - [prefix IP].1.155 
 
 - Pada Westalis
+Edit konfigurasi berikut sesuai dengan permintaan soal.
 ```
 echo '
 subnet 192.195.28.1.0 netmask 255.255.255.0 {
@@ -172,11 +184,16 @@ subnet 192.195.2.0 netmask 255.255.255.0{
 }
 
 ' > /etc/dhcp/dhcpd.conf
+```
+
+Restart DHCP Server
+```
 service isc-dhcp-server restart
 service isc-dhcp-server status
 ```
 
 - Pada SSS
+edit konfigurasi pada /etc/network/interfaces
 ```
 echo '
 #auto eth0
@@ -190,6 +207,7 @@ iface eth0 inet dhcp
 ```
 
 - Pada Garden
+edit konfigurasi pada /etc/network/interfaces
 ```
 #auto eth0
 #iface eth0 inet static
@@ -204,19 +222,8 @@ iface eth0 inet dhcp
 ### SOAL 4
 ### Client yang melalui Switch3 mendapatkan range IP dari [prefix IP].3.10 - [prefix IP].3.30 dan [prefix IP].3.60 - [prefix IP].3.85 
 - Pada Westalis
+Tambahkan konfigurasi berikut ke `/etc/dhcp/dhcpd.conf`
 ```
-echo '
-subnet 192.195.1.0 netmask 255.255.255.0 {
-    range 192.195.1.50 192.195.1.88;
-    range 192.195.1.120 192.195.1.155;
-    option routers 192.195.1.1;
-    option broadcast-address 192.195.1.255;
-    option domain-name-servers 192.195.2.2;
-}
-
-subnet 192.195.2.0 netmask 255.255.255.0{
-}
-
 subnet 192.195.3.0 netmask 255.255.255.0 {
     range 192.195.3.10 192.195.3.30;
     range 192.195.3.60 192.195.3.85;
@@ -227,9 +234,6 @@ subnet 192.195.3.0 netmask 255.255.255.0 {
     max-lease-time 6900;
 }
 
-' > /etc/dhcp/dhcpd.conf
-service isc-dhcp-server restart
-service isc-dhcp-server status
 ```
 
 - Pada Eden
@@ -273,8 +277,8 @@ iface eth0 inet dhcp
 ### SOAL 5
 ### Client mendapatkan DNS dari WISE dan client dapat terhubung dengan internet melalui DNS tersebut. 
 - Pada WISE
+lakukan konfigurasi berikut pada `/etc/bind/named.conf.options`
 ```
-echo '
 options {
         directory "/var/cache/bind";
 
@@ -286,10 +290,13 @@ options {
         auth-nxdomain no;    # conform to RFC1035
         listen-on-v6 { any; };
 };
-' > /etc/bind/named.conf.options
-
+```
+restart bind9
+```
 service bind9 restart
 ```
+
+Lakukan restart pada DHPCP server dan DHCP relay
 
 - Pada Westalis
 ```
@@ -308,85 +315,42 @@ cat /etc/resolv.conf
 ### SOAL 6
 ### Lama waktu DHCP server meminjamkan alamat IP kepada Client yang melalui Switch1 selama 5 menit sedangkan pada client yang melalui Switch3 selama 10 menit. Dengan waktu maksimal yang dialokasikan untuk peminjaman alamat IP selama 115 menit. 
 - Pada Westalis
-```
-echo '
-subnet 192.195.1.0 netmask 255.255.255.0 {
-    range 192.195.1.50 192.195.1.88;
-    range 192.195.1.120 192.195.1.155;
-    option routers 192.195.1.1;
-    option broadcast-address 192.195.1.255;
-    option domain-name-servers 192.195.2.2;
-    default-lease-time 300;
-    max-lease-time 6900;
-}
+Untuk Lama waktu DHCP server meminjamkan alamat IP kepada Client yang melalui Switch1 selama 5 menit:
+`default-lease-time 300;` tambahkan pada `/etc/dhcp/dhcpd.conf`
 
-subnet 192.195.3.0 netmask 255.255.255.0 {
-    range 192.195.3.10 192.195.3.30;
-    range 192.195.3.60 192.195.3.85;
-    option routers 192.195.3.1;
-    option broadcast-address 192.195.3.255;
-    option domain-name-servers 192.195.2.2;
-    default-lease-time 600;
-    max-lease-time 6900;
-}
+sedangkan yang melalui Switch 2 10 menit:
+``default-lease-time 600;` tambahkan pada `/etc/dhcp/dhcpd.conf`
 
-subnet 192.195.2.0 netmask 255.255.255.0{
-}
+Konfigurasi untuk mengatur waktu maksimal yang dialokasikan untuk peminjaman alamat IP selama 115 menit. 
+`max-lease-time 6900;`
 
-' > /etc/dhcp/dhcpd.conf
-service isc-dhcp-server restart
-service isc-dhcp-server status
-```
 	
 ### SOAL 7
 ### Loid dan Franky berencana menjadikan Eden sebagai server untuk pertukaran informasi dengan alamat IP yang tetap dengan IP [prefix IP].3.13
 - Di Eden
+cek ip terlebih dahulu
 ```
 ip a
 ```
+
 - Di Westalis
 
+Buka file lagi, yaitu /etc/dhcp/dhcpd.conf dan edit seperti konfigurasi berikut.
 ```
-echo '
-subnet 192.195.1.0 netmask 255.255.255.0 {
-    range 192.195.1.50 192.195.1.88;
-    range 192.195.1.120 192.195.1.155;
-    option routers 192.195.1.1;
-    option broadcast-address 192.195.1.255;
-    option domain-name-servers 192.195.2.2;
-    default-lease-time 300;
-    max-lease-time 6900;
-}
-
-subnet 192.195.3.0 netmask 255.255.255.0 {
-    range 192.195.3.10 192.195.3.30;
-    range 192.195.3.60 192.195.3.85;
-    option routers 192.195.3.1;
-    option broadcast-address 192.195.3.255;
-    option domain-name-servers 192.195.2.2;
-    default-lease-time 600;
-    max-lease-time 6900;
-}
-
-subnet 192.195.2.0 netmask 255.255.255.0{
-}
-
 host Eden {
 	hardware ethernet 36:76:4e:b9:de:3f
 	fixed-address 192.195.3.13
 }
-
-' > /etc/dhcp/dhcpd.conf
-service isc-dhcp-server restart
-service isc-dhcp-server status
 ```
 
 - Di Ostania
+restart DHCP Relay
 ```
 service isc-dhcp-relay restart
 ```
 
 - Di Eden
+perbarui konfigurasi di eden
 ```
 echo '
 #auto eth0
@@ -452,7 +416,6 @@ http_access allow all
 
 ' > /etc/squid/squid.conf
 
-service squid restart
 ```
 
 
@@ -461,23 +424,9 @@ service squid restart
 ### Saat akses internet dibuka, client dilarang untuk mengakses web tanpa HTTPS. (Contoh web HTTP: http://example.com)
 
 - di Berlint
+Tambahkan pada `/etc/squid/squid.conf`
 ```
-echo '
-include /etc/squid/acl.conf
-
-http_port 8080
-visible_hostname Berlint
-
-acl SSL_ports port 443
-acl WORKSITES dstdomain "/etc/squid/work-sites.acl"
 http_access deny !SSL_ports
-http_access allow WORKSITES
-http_access deny WORKING
-http_access allow all
-
-' > /etc/squid/squid.conf
-
-service squid restart
 ```
 
 ### SOAL 4 PROXY
